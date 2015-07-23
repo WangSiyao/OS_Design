@@ -239,6 +239,14 @@ void TestA()
 		{
 			RemoveFile(fd_stdin, fd_stdout);
 		}
+		else if(strcmp(rdbuf, "WriteFile") == 0)
+		{
+			WriteFile(fd_stdin, fd_stdout);
+		}
+		else if(strcmp(rdbuf, "ReadFile") == 0)
+		{
+			ReadFile(fd_stdin, fd_stdout);
+		}
 		else if (strcmp(rdbuf, "clear") == 0)
 		{
 			clear();
@@ -319,6 +327,8 @@ void help()
 	printf("5. runttt        : Run a small game on this OS\n");
 	printf("6. NewFile       : Create a new file on this OS\n");
 	printf("7. RemoveFile    : Remove a new file on this OS\n");
+	printf("8. WriteFile     : Write into a file on this OS\n");
+	printf("9. ReadFile      : Write into a file on this OS\n");
 	printf("==============================================================================\n");		
 }
 
@@ -372,7 +382,69 @@ void RemoveFile(int fd_stdin,int fd_stdout)
 	
 }
 
+void WriteFile(int fd_stdin,int fd_stdout)
+{
+	int fd;
+	int n;
+	char buf[80]={0};
+	char wbuf[200]={0};
 
+	char IsFirst = 0;
+	int IsFinish = 0;
+	while(!IsFinish)
+	{
+
+		printf("Please input the file name..\n");
+
+		int r = read(fd_stdin, buf, 70);
+		buf[r] = 0;
+
+		fd = open(buf, O_RDWR);
+		assert(fd != -1);
+		printl("File opened. fd: %d\n", fd);
+
+		printf("Please input the text..\n");
+		int w = read(fd_stdin, wbuf, 200);
+		wbuf[w] = 0;
+		
+		n = write(fd, wbuf, strlen(wbuf));
+		assert(n == strlen(wbuf));
+		
+		close(fd);
+		IsFinish = 1;
+	}
+}
+
+void ReadFile(int fd_stdin,int fd_stdout)
+{
+	int fd;
+	int n;
+	char buf[80]={0};
+	int rd_bytes = 200;
+	char bufr[200]={0};
+
+	char IsFirst = 0;
+	int IsFinish = 0;
+	while(!IsFinish)
+	{
+
+		printf("Please input the file name..\n");
+
+		int r = read(fd_stdin, buf, 70);
+		buf[r] = 0;
+
+		fd = open(buf, O_RDWR);
+		assert(fd != -1);
+		
+		n = read(fd, bufr, rd_bytes);
+		//assert(n == rd_bytes);
+		bufr[n] = 0;
+		printl("File read: %s\n", bufr);
+		
+		close(fd);
+		IsFinish = 1;
+	}
+}
 
 /*****************************************************************************
  *                                panic
