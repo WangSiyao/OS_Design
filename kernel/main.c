@@ -235,7 +235,10 @@ void TestA()
 
 			NewFile(fd_stdin, fd_stdout);
 		}
-		
+		else if(strcmp(rdbuf, "RemoveFile") == 0)
+		{
+			RemoveFile(fd_stdin, fd_stdout);
+		}
 		else if (strcmp(rdbuf, "clear") == 0)
 		{
 			clear();
@@ -245,8 +248,6 @@ void TestA()
 			printf("                                     Welcome !\n");
 			printf("                        ==================================\n");
 		}
-		
-
 		else
 			printf("Command not found, please check!\n");
 	}
@@ -317,6 +318,7 @@ void help()
 //	printf("5. taskmanager   : Run a task manager,you can add or kill a process here\n");
 	printf("5. runttt        : Run a small game on this OS\n");
 	printf("6. NewFile       : Create a new file on this OS\n");
+	printf("7. RemoveFile    : Remove a new file on this OS\n");
 	printf("==============================================================================\n");		
 }
 
@@ -338,6 +340,32 @@ void NewFile(int fd_stdin,int fd_stdout)
 		fd = open(buf, O_CREAT | O_RDWR);
 		assert(fd != -1);
 		printl("File created: %s (fd %d)\n", buf, fd);
+		close(fd);		
+
+		IsFinish = 1;
+	}
+	
+}
+
+void RemoveFile(int fd_stdin,int fd_stdout)
+{
+	int fd;
+	char buf[80]={0};
+
+	char IsFirst = 0;
+	int IsFinish = 0;
+	while(!IsFinish)
+	{
+
+		printf("Please input the file name..\n");
+
+		int r = read(fd_stdin, buf, 70);
+		buf[r] = 0;
+
+		if (unlink(buf) == 0)
+			printl("File removed: %s\n", buf);
+		else
+			printl("Failed to remove file: %s\n", buf);
 		
 		IsFinish = 1;
 	}
