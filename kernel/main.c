@@ -217,10 +217,10 @@ void TestA()
 		int r = read(fd_stdin, rdbuf, 70);
 		rdbuf[r] = 0;
 		//show();
-        if (strcmp(rdbuf, "process") == 0)
-        {
+		if (strcmp(rdbuf, "process") == 0)
+		{
 			//ProcessManage();
-        }
+		}
 		else if (strcmp(rdbuf, "filemng") == 0)
 		{
 			printf("File Manager is already running on CONSOLE-1 ! \n");
@@ -230,10 +230,10 @@ void TestA()
 		{
 			help();
 		}
-		else if (strcmp(rdbuf, "runttt") == 0)
+		else if (strcmp(rdbuf, "NewFile") == 0)
 		{
 
-			//TTT(fd_stdin, fd_stdout);
+			NewFile(fd_stdin, fd_stdout);
 		}
 		
 		else if (strcmp(rdbuf, "clear") == 0)
@@ -316,7 +316,32 @@ void help()
 	printf("4. help          : Show this help message\n");
 //	printf("5. taskmanager   : Run a task manager,you can add or kill a process here\n");
 	printf("5. runttt        : Run a small game on this OS\n");
+	printf("6. NewFile       : Create a new file on this OS\n");
 	printf("==============================================================================\n");		
+}
+
+void NewFile(int fd_stdin,int fd_stdout)
+{
+	int fd;
+	char buf[80]={0};
+
+	char IsFirst = 0;
+	int IsFinish = 0;
+	while(!IsFinish)
+	{
+
+		printf("Please input the file name..\n");
+
+		int r = read(fd_stdin, buf, 70);
+		buf[r] = 0;
+
+		fd = open(buf, O_CREAT | O_RDWR);
+		assert(fd != -1);
+		printl("File created: %s (fd %d)\n", buf, fd);
+		
+		IsFinish = 1;
+	}
+	
 }
 
 
