@@ -247,11 +247,15 @@ void TestA()
 		{
 			ReadFile(fd_stdin, fd_stdout);
 		}
+		else if(strcmp(rdbuf, "Chess") == 0)
+		{
+			chess(fd_stdin, fd_stdout);
+		}
 		else if (strcmp(rdbuf, "clear") == 0)
 		{
 			clear();
 			printf("                        ==================================\n");
-			printf("                                   MyTinix v1.0.2             \n");
+			printf("                                   Honginix v1.0.2             \n");
 			printf("                                 Kernel on Orange's \n\n");
 			printf("                                     Welcome !\n");
 			printf("                        ==================================\n");
@@ -324,7 +328,7 @@ void help()
 	printf("3. clear         : Clear the screen\n");
 	printf("4. help          : Show this help message\n");
 //	printf("5. taskmanager   : Run a task manager,you can add or kill a process here\n");
-	printf("5. runttt        : Run a small game on this OS\n");
+	printf("5. chess         : Run a chess game on this OS\n");
 	printf("6. NewFile       : Create a new file on this OS\n");
 	printf("7. RemoveFile    : Remove a new file on this OS\n");
 	printf("8. WriteFile     : Write into a file on this OS\n");
@@ -445,6 +449,352 @@ void ReadFile(int fd_stdin,int fd_stdout)
 		IsFinish = 1;
 	}
 }
+
+/*****************************************************************************
+ *                                chess
+ *****************************************************************************/
+#define P1 1
+#define P2 -1
+#define SIZE 3
+#define WIN -1
+#define UNWIN 0
+#define PEACE 1
+#define chkAndPutDwnRow(row, col){\
+for(col = 0; col < SIZE; col++){\
+    if(chsman[row][col] == 0){\
+        chsman[row][col] = P2;\
+        dsply();\
+        return;\
+    }\
+}\
+}
+#define chkAndPutDwnCol(row, col){\
+for(col = 0; col < SIZE; col++){\
+    if(chsman[col][row] == 0){\
+        chsman[col][row] = P2;\
+        dsply();\
+        return;\
+    }\
+}\
+}
+#define chkAndPutDwn_Slsh(row, col){\
+if(chsman[row][col] == 0){\
+    chsman[row][col] = P2;\
+    dsply();\
+    return;\
+}\
+}
+int chsman[SIZE][SIZE] = {0};
+
+//int enterChsman(int, int);
+//void dsply(void);
+//void input(void);
+//void judge(void);
+//int chkWin(void);
+//int chkPeace(void);
+
+int stepFlg = 0;
+
+int enterChsman(int row, int col)
+{
+    
+    if(row >= SIZE || col >= SIZE)
+        return 0;
+
+    if(chsman[row][col] != 0)
+        return 0;
+    
+    chsman[row][col] = P1;
+    return 1;
+}
+
+int enterChsman2(int row, int col) //二号玩家使用
+{
+    
+    if(row >= SIZE || col >= SIZE)
+        return 0;
+    
+    if(chsman[row][col] != 0)
+        return 0;
+    
+    chsman[row][col] = P2;
+    return 1;
+}
+
+
+//用户输入
+void input(int fd_stdin,int fd_stdout)
+{
+    char buf[80]={0};
+    int row = 0;
+    int col = 0;
+    do{
+        printf("Please put in the location you wanted:\n");
+       
+		int r = read(fd_stdin, buf, 80);
+		buf[r] = 0;
+        //scanf("%d", &row);
+       
+        //scanf("%d", &col);
+
+	if(buf[0] == '1'){
+		row = 2;
+ 		col = 0;
+	}
+	if(buf[0] == '2'){
+		row = 2;
+ 		col = 1;
+	}
+	if(buf[0] == '3'){
+		row = 2;
+ 		col = 2;
+	}
+	if(buf[0] == '4'){
+		row = 1;
+ 		col = 0;
+	}
+	if(buf[0] == '5'){
+		row = 1;
+ 		col = 1;
+	}
+	if(buf[0] == '6'){
+		row = 1;
+ 		col = 2;
+	}
+	if(buf[0] == '7'){
+		row = 0;
+ 		col = 0;
+	}
+	if(buf[0] == '8'){
+		row = 0;
+ 		col = 1;
+	}
+	if(buf[0] == '9'){
+		row = 0;
+ 		col = 2;
+	}
+	if(buf[0] == '1'){
+		row = 2;
+ 		col = 0;
+	}
+
+
+        if(enterChsman(row, col) == 1){
+            printf("You put on [%d][%d].\n", row, col);
+            dsply();
+            break;
+        }
+        else
+            printf("Sorry! You input wrong number!\n");
+    }while(1);
+    return;
+}
+
+
+void input2(int fd_stdin,int fd_stdout)
+{
+    //int row2,col2;
+
+    char buf[80]={0};
+    char buf2[80]={0};
+		
+   do{
+        printf("行号: ");
+        int r = read(fd_stdin, buf, 80);
+		buf[r] = 0;
+        if(enterChsman2((int)buf - 1, (int)buf2 - 1) == 1){
+            printl("2号放在了 [%d][%d].\n", (int)buf, (int)buf2);
+//            chsman[row2-1][col2-1] = P2;
+            dsply();
+            
+            break;
+        }
+        else
+            printf("Sorry! You input wrong number!！\n");
+    }while(1);
+    return;
+    
+}
+
+//系统自动判断并输入函数
+void judge(void)
+{
+    int row, col;
+    int i;
+
+    int rskAndAtkLevlRow[SIZE] = {0}, rskAndAtkLevlCol[SIZE] = {0}, rskAndAtkLevlSlsh[2] = {0};
+
+    stepFlg++;  //纪录是第几步了
+
+    for(row = 0; row < SIZE; row++){
+        for(col = 0; col < SIZE; col++){
+            rskAndAtkLevlRow[row] += chsman[row][col];
+        }
+    }
+    for(col = 0; col < SIZE; col++){
+        for(row = 0; row < SIZE; row++){
+            rskAndAtkLevlCol[col] += chsman[row][col];
+        }
+    }
+    rskAndAtkLevlSlsh[0] = chsman[0][0] + chsman[1][1] + chsman[2][2];
+    rskAndAtkLevlSlsh[1] = chsman[0][2] + chsman[1][1] + chsman[2][0];
+
+    for(i = 0; i < SIZE; i++){
+        if(rskAndAtkLevlRow[i] == -2){
+            chkAndPutDwnRow(i, col)
+        }
+    }
+
+    for(i = 0; i< SIZE; i++){
+        if(rskAndAtkLevlCol[i] == -2){
+            chkAndPutDwnCol(i, col)
+        }
+    }
+
+    if(rskAndAtkLevlSlsh[0] == -2){
+        for(row = 0, col = 0; row < SIZE; row++, col++){
+            chkAndPutDwn_Slsh(row, col)
+        }
+    }
+
+    if(rskAndAtkLevlSlsh[1] == -2){
+        for(row = 0, col = 2; row < SIZE; row++, col--){
+            chkAndPutDwn_Slsh(row, col)
+        }
+    }
+
+
+    for(i = 0; i < SIZE; i++){
+        if(rskAndAtkLevlRow[i] == 2){
+            chkAndPutDwnRow(i, col)
+        }
+    }
+
+    for(i = 0; i< SIZE; i++){
+        if(rskAndAtkLevlCol[i] == 2){
+            chkAndPutDwnCol(i, col)
+        }
+    }
+
+    if(rskAndAtkLevlSlsh[0] == 2){
+        for(row = 0, col = 0; row < SIZE; row++, col++){
+            chkAndPutDwn_Slsh(row, col)
+        }
+    }
+
+    if(rskAndAtkLevlSlsh[1] == 2){
+        for(row = 0, col = 2; row < SIZE; row++, col--){
+            chkAndPutDwn_Slsh(row, col)
+        }
+    }
+
+    for(row = 0; row < SIZE; row++){
+        for(col = 0; col < SIZE; col++){
+            if(chsman[row][col] == 0 && ((row == 0 && col == 0) || (row == 0 && col == 2) ||
+                                         (row == 2 && col == 0) || (row == 2 && col == 2))){
+                chsman[row][col] = P2;
+                dsply();
+                return;
+            }
+        }
+    }
+}
+//显示现在的界面
+void dsply(void)
+{
+    int row, col, i;
+
+    for(i = 0; i < SIZE * 4 + 1; i++)
+        printf("-");
+    printf("\n");
+  //打印函数
+    for(row = 0; row < SIZE; row++){
+        printf("|");
+        for(col = 0; col < SIZE; col++){
+            if(chsman[row][col] == P1) printf(" o |");
+            else if(chsman[row][col] == P2) printf(" x |");
+            else printf("   |");
+        }
+        printf("\n");
+        
+        for(i = 0; i < SIZE * 4 + 1; i++)
+            printf("-");
+        printf("\n");
+    }
+    return;
+}
+
+//检查是否有一方胜出
+int chkWin(void)
+{
+    int i;
+    for(i = 0; i < SIZE; i++){
+        if(chsman[i][0] + chsman[i][1] + chsman[i][2] == -3 || chsman[0][i] + chsman[1][i] + chsman[2][i] == -3 ||
+           chsman[0][0] + chsman[1][1] + chsman[2][2] == -3 || chsman[0][2] + chsman[1][1] + chsman[2][0] == -3){
+            return WIN;
+        }
+    }
+    for(i = 0; i < SIZE; i++){
+        if(chsman[i][0] + chsman[i][1] + chsman[i][2] == 3 || chsman[0][i] + chsman[1][i] + chsman[2][i] == 3 ||
+           chsman[0][0] + chsman[1][1] + chsman[2][2] == 3 || chsman[0][2] + chsman[1][1] + chsman[2][0] == 3){
+            return UNWIN;
+        }
+    }
+    
+    return 2;
+}
+//检查是否平局
+int chkPeace(void)
+{
+    int row, col;
+    int sum = 0;
+    for(row = 0; row < SIZE; row++){
+        for(col = 0; col < SIZE; col++){
+            if(sum += chsman[row][col] == PEACE){
+                return PEACE;
+            }
+        }
+    }
+    return 0;
+}
+void chess(int fd_stdin,int fd_stdout)
+{
+    dsply();
+
+    printf("Please choose players model 1 or computer model 2 :");
+    //int player;
+    //scanf("%d", &player);
+
+		char player[80]={0};
+		int r = read(fd_stdin, player, 80);
+		player[r] = 0;
+    
+           
+    do{
+        input(fd_stdin,fd_stdout);
+        
+        if(player[0] == '1') input2(fd_stdin,fd_stdout);
+        else if (player[0] == '2') judge();
+        else{
+            printf("Sorry! You input wrong number,Please type in again！");
+            continue;
+        }
+        if(chkWin() == WIN) break;
+        if(chkWin() == UNWIN) break;
+        if(stepFlg == 5 && chkPeace() == PEACE){
+            printf("Peace!");
+            return 0;
+        }
+    }while(1);
+    
+    if(chkWin() == WIN)
+        printf("二号玩家胜利！ ");
+    if(chkWin() == UNWIN)
+        printf("一号玩家胜利！ ");
+    return 0;
+}
+
+
 
 /*****************************************************************************
  *                                panic
